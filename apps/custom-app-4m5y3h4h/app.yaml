@@ -1,0 +1,67 @@
+schema_version: 1
+title: "Planet Pulse"
+description: "Globe-first hazard awareness. Live tab: wildfires, earthquakes, storms,
+  floods, volcanoes and sea ice from NASA EONET, USGS, NOAA and the Smithsonian. Timeline
+  tab: 50 years of earthquakes, plus wildfires, storms, floods and volcanoes where
+  a verified source exists. Search any city of 15,000+ people to see what is near
+  it. Situational awareness only, not an official warning system."
+icon: analytics-up
+accent_color: "#3DDCFF"
+
+routes:
+  - path: home
+    module: pages/home.js
+    title: "Live"
+    home: true
+  - path: timeline
+    module: pages/timeline.js
+    title: "Timeline"
+  - path: sources
+    module: pages/sources.js
+    title: "Sources & method"
+
+styles:
+  - styles.css
+
+data:
+  - id: live
+    label: "Live hazard events (hourly), each inside its per-hazard live window"
+    source: /table/live
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse live hazards (app)"
+      pipeline_id: "11333"
+  - id: lsrc
+    label: "Live feed health: one row per source feed"
+    source: /table/lsrc
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse live hazards (app)"
+      pipeline_id: "11333"
+  - id: hist
+    label: "Event history for the Timeline (daily): USGS earthquakes and NASA EONET
+      events"
+    source: /table/hist
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse history (app)"
+      pipeline_id: "11331"
+  - id: hstat
+    label: "History fetch status: one row per fetched time slice"
+    source: /table/hstat
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse history (app)"
+      pipeline_id: "11331"
+  - id: places
+    label: "GeoNames cities of 15,000+ people, for place search"
+    source: /table/places
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse places (app)"
+      pipeline_id: "11332"
+
+refresh:
+  mode: feature_view
+  seconds: 900
+engine: "1.32.0"
