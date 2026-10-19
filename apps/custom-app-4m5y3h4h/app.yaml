@@ -60,6 +60,21 @@ data:
       kind: pipeline
       pipeline: "Planet Pulse places (app)"
       pipeline_id: "11332"
+  - id: vlive
+    label: "Live volcanic ash advisories, one event per volcano (NOAA Washington VAAC,
+      JMA Tokyo VAAC)"
+    source: /table/vlive
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse live hazards (app)"
+      pipeline_id: "11333"
+  - id: vsrc
+    label: "Volcanic ash advisory feed health: one row per VAAC"
+    source: /table/vsrc
+    produced_by:
+      kind: pipeline
+      pipeline: "Planet Pulse live hazards (app)"
+      pipeline_id: "11333"
 
 refresh:
   mode: feature_view

@@ -63,8 +63,10 @@ export const SRC = {
   NHC: { name: "NOAA NHC storms", url: "https://www.nhc.noaa.gov/", docs: "https://www.nhc.noaa.gov/productexamples/NHC_JSON_Sample.json" },
   HANS: { name: "USGS volcano alerts", url: "https://volcanoes.usgs.gov/", docs: "https://volcanoes.usgs.gov/hans-public/" },
   GVP: { name: "Smithsonian weekly volcano report", url: "https://volcano.si.edu/", docs: "https://volcano.si.edu/reports_weekly.cfm" },
+  WVAAC: { name: "NOAA Washington VAAC ash advisories", url: "https://www.ospo.noaa.gov/products/atmosphere/vaac/", docs: "https://www.ospo.noaa.gov/products/atmosphere/vaac/messages.html" },
+  TVAAC: { name: "JMA Tokyo VAAC ash advisories", url: "https://www.data.jma.go.jp/svd/vaac/data/", docs: "https://www.data.jma.go.jp/svd/vaac/data/" },
 };
-const SRC_ORDER = ["EONET", "USGS", "NWS", "NHC", "HANS", "GVP"];
+const SRC_ORDER = ["EONET", "USGS", "NWS", "NHC", "HANS", "GVP", "WVAAC", "TVAAC"];
 
 export const WINDOWS = [
   { v: "24h", label: "24 h", ms: 864e5 },
@@ -92,10 +94,12 @@ export const RESOURCES = [
   { title: "WMO Severe Weather Information Centre", description: "Official national warnings from meteorological services worldwide.", source_url: "https://severeweather.wmo.int/" },
   { title: "USGS Volcano Hazards Program", description: "Official U.S. volcano alert levels and notices.", source_url: "https://volcanoes.usgs.gov/" },
   { title: "Smithsonian Global Volcanism Program", description: "Weekly worldwide volcanic-activity reports and volcano profiles.", source_url: "https://volcano.si.edu/" },
+  { title: "NOAA Washington Volcanic Ash Advisory Center", description: "Official volcanic ash advisories for the Americas and the Caribbean, issued for aviation.", source_url: "https://www.ospo.noaa.gov/products/atmosphere/vaac/" },
+  { title: "JMA Tokyo Volcanic Ash Advisory Center", description: "Official volcanic ash advisories for East Asia and the western Pacific, issued for aviation.", source_url: "https://www.data.jma.go.jp/svd/vaac/data/" },
 ];
 const OFFICIAL = {
   earthquake: [2, 3], cyclone: [1, 0, 3], weather: [0], flood: [0], wildfire: [5],
-  volcano: [7, 8, 6], drought: [0, 6], ice: [6], landslide: [6], other: [6],
+  volcano: [7, 9, 10, 8, 6], drought: [0, 6], ice: [6], landslide: [6], other: [6],
 };
 export const officialFor = (hazard) => {
   const idx = [...(OFFICIAL[hazard] || [6]), 4];
@@ -109,7 +113,7 @@ const num = (v) => (v == null ? null : Number(v));
 
 export async function loadLive(db) {
   const now = Date.now();
-  const [ev, src] = await Promise.all([
+  const [ev0, src0, vev, vsrc] = await Promise.all([
     db.rows(`SELECT event_id, trigger_source AS source, source_name, hazard, hazard_label, title, description, lat, lon, coord_basis,
                     severity, severity_label, severity_basis, magnitude_value, magnitude_unit,
                     event_ts_ms, started_ts_ms, updated_ts_ms, expires_ts_ms, live_until_ms, source_url, secondary_url,
@@ -117,7 +121,17 @@ export async function loadLive(db) {
              FROM live WHERE lat IS NOT NULL AND lon IS NOT NULL AND live_until_ms >= ${now}
              ORDER BY severity DESC, event_ts_ms DESC LIMIT 5000`),
     db.rows(`SELECT source, run_at, status, message, n_raw, n_live_events, latency_ms FROM lsrc LIMIT 50`),
+    // Volcanic ash advisories (NOAA Washington VAAC, JMA Tokyo VAAC) live in their own tables.
+    // If those are unavailable the rest of the app still loads.
+    Promise.resolve().then(() => db.rows(`SELECT event_id, trigger_source AS source, source_name, hazard, hazard_label, title, description, lat, lon, coord_basis,
+                    severity, severity_label, severity_basis, magnitude_value, magnitude_unit,
+                    event_ts_ms, started_ts_ms, updated_ts_ms, expires_ts_ms, live_until_ms, source_url, secondary_url,
+                    area, meta_json, track_json, run_at
+             FROM vlive WHERE lat IS NOT NULL AND lon IS NOT NULL AND live_until_ms >= ${now}
+             ORDER BY event_ts_ms DESC LIMIT 500`)).catch(() => []),
+    Promise.resolve().then(() => db.rows(`SELECT source, run_at, status, message, n_raw, n_live_events, latency_ms FROM vsrc LIMIT 10`)).catch(() => []),
   ]);
+  const ev = ev0.concat(vev), src = src0.concat(vsrc);
   const seen = new Set(), events = [];
   for (const e of ev) {
     if (seen.has(e.event_id)) continue;
@@ -234,6 +248,7 @@ export function magText(e) {
   if (e.magnitude_value == null) return "";
   const v = e.magnitude_value, u = e.magnitude_unit || "";
   if (u.startsWith("M")) return `${u.length > 1 ? "M" + v.toFixed(1) + " " + u.slice(1) : "M" + v.toFixed(1)}`;
+  if (u === "FL") return `FL${fmtNum(v)} (about ${fmtNum(v * 100)} ft)`;
   if (u === "acres") return `${fmtNum(v)} acres`;
   if (u === "kts" || u === "kt") return `${fmtNum(v)} kt (${fmtNum(v * 1.15078)} mph)`;
   return `${fmtNum(v, 1)} ${u}`.trim();

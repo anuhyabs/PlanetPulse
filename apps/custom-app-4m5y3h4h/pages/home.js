@@ -50,7 +50,7 @@ export default async function render(ctx) {
       <button type="button" class="link-btn" id="reset">Reset</button></span></div>
     <div class="fs-wrap" id="fswrap">
       <fieldset><legend>Hazard type</legend><div class="chips" id="chips"></div><div id="nanote"></div></fieldset>
-      <fieldset><legend>Time window</legend><div class="seg" id="win"></div><p class="note" style="margin-top:6px">Uses each source's own event timestamp. Only events inside their live window are loaded at all (quakes 7 days, storms 3, fires 30, ice 60, NWS alerts until they expire).</p></fieldset>
+      <fieldset><legend>Time window</legend><div class="seg" id="win"></div><p class="note" style="margin-top:6px">Uses each source's own event timestamp. Only events inside their live window are loaded at all (quakes 7 days, storms 3, fires 30, ice 60, NWS alerts until they expire, volcanic ash advisories 2 days).</p></fieldset>
       <div>
         <label class="field">Minimum severity<select id="sev">
           <option value="0">All (incl. unrated)</option><option value="1">Minor and above</option><option value="2">Moderate and above</option><option value="3">Severe and above</option><option value="4">Extreme only</option></select></label>

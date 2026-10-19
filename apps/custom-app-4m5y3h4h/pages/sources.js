@@ -9,6 +9,7 @@ const LIVE_RULES = [
   ["NWS alerts (floods, severe weather)", "until the alert's own end or expiry time"],
   ["Volcano alert notices (USGS HANS)", "3 days after the notice"],
   ["Smithsonian weekly volcano report", "14 days after the report"],
+  ["Volcanic ash advisories (NOAA Washington VAAC, JMA Tokyo VAAC)", "2 days after the latest advisory for that volcano"],
 ];
 
 export default async function render(ctx) {
@@ -53,7 +54,7 @@ export default async function render(ctx) {
     <section class="card" aria-labelledby="lh"><h2 id="lh">What counts as “live”</h2>
       <p class="note">Each hazard has its own live window, because sources keep records “open” for very different lengths of time. An event drops off the Live tab when its window ends; it stays in the Timeline.</p>
       <div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Hazard / source</th><th scope="col">Live until</th></tr></thead><tbody>${LIVE_RULES.map((r) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")}</tbody></table></div>
-      <p class="note" style="margin-top:10px">NASA EONET's own volcano records are kept for the Timeline only: they are often years old. Current volcano activity comes from the USGS alert notices and the Smithsonian weekly report. A Smithsonian report for a volcano that also has a USGS alert is shown once, as the USGS alert.</p>
+      <p class="note" style="margin-top:10px">NASA EONET's own volcano records are kept for the Timeline only: they are often years old. Current volcano activity comes from the USGS alert notices, volcanic ash advisories from the NOAA Washington and JMA Tokyo Volcanic Ash Advisory Centers (one marker per volcano, showing its latest advisory) and the Smithsonian weekly report. Ash advisories are aviation products: they say ash is being emitted, not how severe an eruption is, so they are shown as unrated. A Smithsonian report for a volcano that also has a USGS alert is shown once, as the USGS alert.</p>
     </section>
     <section class="card" aria-labelledby="nh"><h2 id="nh">Normalisation &amp; de-duplication</h2>
       <ul>
@@ -102,9 +103,10 @@ export default async function render(ctx) {
       <li>Data: U.S. Geological Survey, Earthquake Hazards Program, and USGS Volcano Hazards Program (HANS). Public domain. ${link(SRC.USGS.url, "Visit source")}</li>
       <li>Data: NOAA / National Weather Service / National Hurricane Center. Public domain. ${link(SRC.NWS.url, "Visit source")}</li>
       <li>Data: Smithsonian Institution Global Volcanism Program and USGS, Weekly Volcanic Activity Report. ${link(SRC.GVP.url, "Visit source")}</li>
+      <li>Data: NOAA / NESDIS Washington Volcanic Ash Advisory Center (public domain) and Japan Meteorological Agency, Tokyo Volcanic Ash Advisory Center (see the JMA terms of use). Advisories are aviation products issued under ICAO rules. ${link(SRC.WVAAC.url, "NOAA Washington VAAC")} ${link(SRC.TVAAC.url, "JMA Tokyo VAAC")}</li>
       <li>Places: GeoNames geographical database (cities15000), licensed CC BY 4.0. ${link("https://www.geonames.org/", "Visit source")}</li>
       <li>Base map: Natural Earth (public domain), 1:110m land polygons, bundled with the app.</li>
-      <li>Planet Pulse is an independent project inspired by the public Terra Watch demo. It is not affiliated with or endorsed by NASA, USGS, NOAA, the Smithsonian or GeoNames.</li></ul></section>
+      <li>Planet Pulse is an independent project inspired by the public Terra Watch demo. It is not affiliated with or endorsed by NASA, USGS, NOAA, JMA, the Smithsonian or GeoNames.</li></ul></section>
 
   <section class="card" aria-labelledby="rh"><h2 id="rh">Official sources to follow</h2>
     <ul class="res" style="gap:8px">${RESOURCES.map((r) => `<li>${link(r.source_url, r.title)}<span>${esc(r.description)}</span></li>`).join("")}</ul>
