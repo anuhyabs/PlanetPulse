@@ -18,12 +18,11 @@ export const HAZARD_ORDER = ["wildfire", "earthquake", "cyclone", "flood", "weat
 
 // Hazards that have a verified source on each tab. Anything else is shown greyed: "no verified source".
 export const AVAIL = {
-  home: new Set(["wildfire", "earthquake", "cyclone", "flood", "weather", "volcano", "ice"]),
+  home: new Set(["wildfire", "earthquake", "cyclone", "flood", "weather", "volcano", "drought", "ice"]),
   timeline: new Set(["earthquake", "cyclone", "wildfire", "volcano", "flood"]),
 };
 export const NA_WHY = {
   home: {
-    drought: "No verified live drought feed was found.",
     landslide: "No verified live landslide feed was found.",
   },
   timeline: {
@@ -63,10 +62,11 @@ export const SRC = {
   NHC: { name: "NOAA NHC storms", url: "https://www.nhc.noaa.gov/", docs: "https://www.nhc.noaa.gov/productexamples/NHC_JSON_Sample.json" },
   HANS: { name: "USGS volcano alerts", url: "https://volcanoes.usgs.gov/", docs: "https://volcanoes.usgs.gov/hans-public/" },
   GVP: { name: "Smithsonian weekly volcano report", url: "https://volcano.si.edu/", docs: "https://volcano.si.edu/reports_weekly.cfm" },
+  GDACS: { name: "GDACS global alerts", url: "https://www.gdacs.org/", docs: "https://www.gdacs.org/gdacsapi/swagger/index.html" },
   WVAAC: { name: "NOAA Washington VAAC ash advisories", url: "https://www.ospo.noaa.gov/products/atmosphere/vaac/", docs: "https://www.ospo.noaa.gov/products/atmosphere/vaac/messages.html" },
   TVAAC: { name: "JMA Tokyo VAAC ash advisories", url: "https://www.data.jma.go.jp/svd/vaac/data/", docs: "https://www.data.jma.go.jp/svd/vaac/data/" },
 };
-const SRC_ORDER = ["EONET", "USGS", "NWS", "NHC", "HANS", "GVP", "WVAAC", "TVAAC"];
+const SRC_ORDER = ["EONET", "USGS", "NWS", "NHC", "GDACS", "HANS", "GVP", "WVAAC", "TVAAC"];
 
 export const WINDOWS = [
   { v: "24h", label: "24 h", ms: 864e5 },
@@ -94,12 +94,13 @@ export const RESOURCES = [
   { title: "WMO Severe Weather Information Centre", description: "Official national warnings from meteorological services worldwide.", source_url: "https://severeweather.wmo.int/" },
   { title: "USGS Volcano Hazards Program", description: "Official U.S. volcano alert levels and notices.", source_url: "https://volcanoes.usgs.gov/" },
   { title: "Smithsonian Global Volcanism Program", description: "Weekly worldwide volcanic-activity reports and volcano profiles.", source_url: "https://volcano.si.edu/" },
+  { title: "GDACS (UN / European Commission)", description: "Global Disaster Alert and Coordination System: automatic alerts for earthquakes, cyclones, floods, wildfires, droughts and volcanoes worldwide. Model-based and not a substitute for national alerts.", source_url: "https://www.gdacs.org/" },
   { title: "NOAA Washington Volcanic Ash Advisory Center", description: "Official volcanic ash advisories for the Americas and the Caribbean, issued for aviation.", source_url: "https://www.ospo.noaa.gov/products/atmosphere/vaac/" },
   { title: "JMA Tokyo Volcanic Ash Advisory Center", description: "Official volcanic ash advisories for East Asia and the western Pacific, issued for aviation.", source_url: "https://www.data.jma.go.jp/svd/vaac/data/" },
 ];
 const OFFICIAL = {
-  earthquake: [2, 3], cyclone: [1, 0, 3], weather: [0], flood: [0], wildfire: [5],
-  volcano: [7, 9, 10, 8, 6], drought: [0, 6], ice: [6], landslide: [6], other: [6],
+  earthquake: [2, 3, 9], cyclone: [1, 0, 3, 9], weather: [0], flood: [0, 9], wildfire: [5, 9],
+  volcano: [7, 10, 11, 8, 6], drought: [6, 0, 9], ice: [6], landslide: [6], other: [6],
 };
 export const officialFor = (hazard) => {
   const idx = [...(OFFICIAL[hazard] || [6]), 4];

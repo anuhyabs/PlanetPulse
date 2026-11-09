@@ -7,6 +7,8 @@ const LIVE_RULES = [
   ["Wildfires (EONET)", "30 days after the latest update"],
   ["Sea & lake ice (EONET)", "60 days after the latest update"],
   ["NWS alerts (floods, severe weather)", "until the alert's own end or expiry time"],
+  ["Floods, wildfires and droughts (GDACS)", "while GDACS flags the event as current, then 2 days (floods, fires) or 7 days (droughts) after its latest update"],
+  ["Cyclones (GDACS)", "3 days after the latest update"],
   ["Volcano alert notices (USGS HANS)", "3 days after the notice"],
   ["Smithsonian weekly volcano report", "14 days after the report"],
   ["Volcanic ash advisories (NOAA Washington VAAC, JMA Tokyo VAAC)", "2 days after the latest advisory for that volcano"],
@@ -63,6 +65,7 @@ export default async function render(ctx) {
         <li>NWS alerts are de-duplicated by their VTEC event key (the latest message wins); cancelled and expired alerts are dropped.</li>
         <li>EONET storm records already covered by an NHC advisory are merged into the NHC record; EONET quakes near a USGS event in space and time are merged into USGS.</li>
         <li>Only Severe and Extreme NWS alerts are pulled.</li>
+        <li><strong>GDACS</strong> adds floods, wildfires, droughts and cyclones worldwide. A GDACS earthquake that matches a USGS quake (within 150 km and one hour) is not shown twice: the USGS record is kept for its depth, felt reports and review status, and gains the GDACS alert level and report link. A GDACS cyclone that matches an NHC storm is merged into the NHC record; elsewhere (for example the western Pacific) the GDACS record is shown.</li>
       </ul>
     </section>
   </div>
@@ -92,7 +95,8 @@ export default async function render(ctx) {
       <li><strong>Wildfires:</strong> reported burned area &lt;1,000 acres minor, 1,000–9,999 moderate, 10,000–99,999 severe, ≥100,000 extreme.</li>
       <li><strong>NWS alerts:</strong> only Severe and Extreme alerts are pulled, so they are shown as severe or extreme.</li>
       <li><strong>USGS volcano alerts:</strong> ADVISORY moderate, WATCH severe, WARNING extreme.</li>
-      <li><strong>Smithsonian volcano reports, floods, sea ice, other:</strong> the source publishes no rating, so they are shown as unrated.</li>
+      <li><strong>GDACS floods, wildfires, droughts and volcanoes:</strong> GDACS alert level Green shown as minor, Orange as moderate, Red as severe. This is GDACS's own model estimate of humanitarian impact. A quake that matches a USGS record is raised to Orange or Red if GDACS rates it higher.</li>
+      <li><strong>Smithsonian volcano reports, sea ice, other:</strong> the source publishes no rating, so they are shown as unrated.</li>
     </ul>
     <p style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">${SEVS.map((s) => `<span class="sev sev${s.n}">${esc(s.label)}</span>`).join("")}</p>
   </section>
@@ -102,6 +106,7 @@ export default async function render(ctx) {
       <li>Data: NASA Earth Observatory Natural Event Tracker (EONET). Event records are compiled from the originating agencies named on each event. ${link(SRC.EONET.url, "Visit source")}</li>
       <li>Data: U.S. Geological Survey, Earthquake Hazards Program, and USGS Volcano Hazards Program (HANS). Public domain. ${link(SRC.USGS.url, "Visit source")}</li>
       <li>Data: NOAA / National Weather Service / National Hurricane Center. Public domain. ${link(SRC.NWS.url, "Visit source")}</li>
+      <li>Source: Global Disaster Alert and Coordination System, GDACS (a cooperation of the United Nations and the European Commission). GDACS output is automatic and model-based, may be incomplete or delayed, is provided “as is”, and does not replace official alerts from national authorities. Underlying data come from agencies such as the Copernicus GloFAS, GWIS and Drought Observatory services. ${link(SRC.GDACS.url, "Visit source")}</li>
       <li>Data: Smithsonian Institution Global Volcanism Program and USGS, Weekly Volcanic Activity Report. ${link(SRC.GVP.url, "Visit source")}</li>
       <li>Data: NOAA / NESDIS Washington Volcanic Ash Advisory Center (public domain) and Japan Meteorological Agency, Tokyo Volcanic Ash Advisory Center (see the JMA terms of use). Advisories are aviation products issued under ICAO rules. ${link(SRC.WVAAC.url, "NOAA Washington VAAC")} ${link(SRC.TVAAC.url, "JMA Tokyo VAAC")}</li>
       <li>Places: GeoNames geographical database (cities15000), licensed CC BY 4.0. ${link("https://www.geonames.org/", "Visit source")}</li>

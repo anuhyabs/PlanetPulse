@@ -58,7 +58,7 @@ export function detailHtml(e, { history = false, placeName = null } = {}) {
     if (COVER[e.hazard]) p.push(['About this record set', esc(COVER[e.hazard])]);
   } else {
     p.push([e.source === 'WVAAC' || e.source === 'TVAAC' ? 'Reported ash height' : 'Magnitude / size', esc(magText(e))]);
-    p.push([e.source === 'NWS' ? 'Alert issued' : e.source === 'NHC' ? 'Latest fix / advisory' : e.source === 'USGS' ? 'Origin time' : e.source === 'GVP' ? 'Weekly report published' : e.source === 'HANS' ? 'Notice sent' : (e.source === 'WVAAC' || e.source === 'TVAAC') ? 'Latest advisory issued' : 'Latest source timestamp', t(e.event_ts_ms)]);
+    p.push([e.source === 'NWS' ? 'Alert issued' : e.source === 'NHC' ? 'Latest fix / advisory' : e.source === 'USGS' ? 'Origin time' : e.source === 'GDACS' ? 'Latest GDACS update' : e.source === 'GVP' ? 'Weekly report published' : e.source === 'HANS' ? 'Notice sent' : (e.source === 'WVAAC' || e.source === 'TVAAC') ? 'Latest advisory issued' : 'Latest source timestamp', t(e.event_ts_ms)]);
     if (e.started_ts_ms && Math.abs(e.started_ts_ms - (e.event_ts_ms || 0)) > 60e3) p.push(['First reported', t(e.started_ts_ms)]);
     if (e.updated_ts_ms && e.updated_ts_ms !== e.event_ts_ms && e.source !== 'EONET') p.push(['Source updated', t(e.updated_ts_ms)]);
     if (e.expires_ts_ms) p.push(['Expires', t(e.expires_ts_ms)]);
@@ -68,6 +68,8 @@ export function detailHtml(e, { history = false, placeName = null } = {}) {
     if (e.source === 'USGS') p.push(['Depth', m.depth_km != null ? `${fmtNum(m.depth_km, 1)} km` : null], ['USGS PAGER alert', m.pager_alert ? esc(m.pager_alert) : null], ['Felt reports', m.felt_reports != null ? fmtNum(m.felt_reports) : null], ['Tsunami flag', m.tsunami_flag ? 'Set by USGS — check tsunami.gov and local authorities' : null], ['Review status', esc(m.review_status)], ['Network', esc(m.network)]);
     if (e.source === 'NHC') p.push(['Classification', esc(m.classification)], ['Min. pressure', m.min_pressure_mb != null ? `${fmtNum(m.min_pressure_mb)} mb` : null], ['Movement', m.movement_speed_mph != null ? `${compass(m.movement_dir_deg)} at ${fmtNum(m.movement_speed_mph)} mph` : null], ['Advisory', esc(m.advisory_number)]);
     if (e.source === 'EONET') p.push(['Reported by', esc((m.origin_agencies || []).join('; '))], ['Position updates', m.geometry_updates > 1 ? fmtNum(m.geometry_updates) : null]);
+    if (e.source === 'USGS' && m.gdacs_alert_level) p.push(['GDACS alert level', esc(m.gdacs_alert_level) + ' <span class=\'muted\'>(model estimate of humanitarian impact)</span>']);
+    if (e.source === 'GDACS') p.push(['GDACS alert level', esc(m.alert_level) + ' <span class=\'muted\'>(model estimate of humanitarian impact)</span>'], ['Countries', esc(trunc(m.countries || e.area, 220))], ['Underlying data from', esc((m.origin_agencies || []).join('; '))], ['First seen', m.first_seen_ms ? esc(fmtUTC(m.first_seen_ms)) : null], ['Last observation', m.last_obs_ms && m.last_obs_ms !== m.first_seen_ms ? esc(fmtUTC(m.last_obs_ms)) : null], ['Reference ID', m.glide ? 'GLIDE ' + esc(m.glide) : null]);
     if (e.source === 'HANS') p.push(['Alert level', esc(m.alert_level)], ['Aviation colour code', esc(m.color_code)], ['Observatory', esc(m.observatory)]);
     if (e.source === 'GVP') p.push(['Report', esc(m.report_kind)], ['Report week', esc(m.report_week)], ['Country', esc(m.country)], ['Summary', esc(trunc(e.description, 420))]);
     if (e.source === 'WVAAC' || e.source === 'TVAAC') p.push(['Advisory number', esc(m.advisory_nr)], ['Issued by', esc(m.vaac)], ['Eruption details', esc(m.eruption_details)], ['Information source', esc(m.info_source)], ['Ash cloud in the latest advisory', m.ash_identified === 'true' ? 'Ash cloud identified or estimated' : m.ash_identified === 'false' ? 'No ash cloud identified' : null], ['Advisories in the last 2 days', m.n_advisories != null ? fmtNum(m.n_advisories) : null]);
@@ -79,10 +81,12 @@ export function detailHtml(e, { history = false, placeName = null } = {}) {
   else if (e.source === 'USGS') L.push(link(e.source_url, 'USGS event page — maps, DYFI, ShakeMap', 'primary'));
   else if (e.source === 'NHC') { L.push(link(e.source_url, 'NHC public advisory (official)', 'primary')); L.push(link(e.secondary_url, 'NHC forecast cone & graphics')); L.push(link(m.discussion_url, 'NHC forecast discussion')); }
   else if (e.source === 'NWS') { L.push(link(m.office_url, 'Issuing NWS forecast office', 'primary')); L.push(link(e.secondary_url, 'NWS point forecast for this location')); L.push(link(e.source_url, 'Raw alert record (api.weather.gov, machine-readable)')); }
+  else if (e.source === 'GDACS') { L.push(link(e.source_url, 'GDACS event report', 'primary')); L.push(link(e.secondary_url, 'GDACS event data (machine-readable)')); }
   else if (e.source === 'HANS') { L.push(link(e.source_url, 'USGS volcano alert notice (official)', 'primary')); L.push(link(e.secondary_url, 'Raw notice data (machine-readable)')); }
   else if (e.source === 'WVAAC' || e.source === 'TVAAC') { L.push(link(e.source_url, 'Full ash advisory text (official)', 'primary')); L.push(link(e.secondary_url, e.source === 'WVAAC' ? 'All current NOAA Washington VAAC advisories' : 'All current JMA Tokyo VAAC advisories')); }
   else if (e.source === 'GVP') { L.push(link(e.source_url, 'Smithsonian volcano profile', 'primary')); L.push(link(e.secondary_url, 'Smithsonian / USGS weekly report page')); }
   else { const first = (m.origin_links || [])[0] || e.source_url; L.push(link(first, `Originating agency page${(m.origin_agencies || [])[0] ? ' — ' + (m.origin_agencies[0].split(' — ')[0]) : ''}`, 'primary')); (m.origin_links || []).slice(1, 3).forEach((u) => L.push(link(u, 'Additional source link'))); L.push(link(e.secondary_url, 'NASA EONET event record (JSON)')); }
+  if (!history && e.source === 'USGS' && m.gdacs_report) L.push(link(m.gdacs_report, 'GDACS report for this earthquake'));
   const links = L.filter(Boolean).map((x) => `<li>${x}</li>`).join('');
 
   let sevText;
